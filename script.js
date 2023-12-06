@@ -50,7 +50,7 @@ window.onload = function() {
     function processImage(imageBase64) {
         showSpinner(true);
         const gpt4VisionAPI = 'https://api.openai.com/v1/chat/completions';
-        const prompt = "Extract the following wine label information: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, pH, sulphates, alcohol content. Make sure the extracted values make sense and vary from wine label to wine label. Give a reasonable value for the label information if it is not present. Return the values you give in the pattern 'fixed acidity: 0.00, volatile acidity: 0.00, citric acid: 0.00, residual sugar: 0.00, chlorides: 0.00, free sulfur dioxide: 0.00, total sulfur dioxide: 0.00, pH: 0.00, sulphates: 0.00, alcohol: 0.00 but with the values you determined/found.'";
+        const prompt = "Extract the following wine label information: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, pH, sulphates, alcohol content. Make sure the extracted values make sense and vary from wine label to wine label. Give a reasonable value for the label information if it is not present. Return the values you give in the pattern 'fixed acidity: 0.00, volatile acidity: 0.00, citric acid: 0.00, residual sugar: 0.00, chlorides: 0.00, free sulfur dioxide: 0.00, total sulfur dioxide: 0.00, pH: 0.00, sulphates: 0.00, alcohol: 0.00 but with the values you determined/found. That format should be in all of your responses so that it can be extracted with a regex pattern'";
 
         const payload = {
             model: "gpt-4-vision-preview",
