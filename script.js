@@ -2,6 +2,9 @@ window.onload = function() {
     const apiKeyForm = document.getElementById('apiKeyForm');
     const apiKeyInput = document.getElementById('apiKey');
     let openAIKey = localStorage.getItem('openAIKey'); // Get the key from local storage
+    let videoFeed = document.getElementById('videoFeed');
+    let takePhotoButton = document.getElementById('takePhoto');
+    let stream = null;
 
     if (openAIKey) {
         apiKeyInput.value = openAIKey; // Set the input field value
@@ -15,28 +18,36 @@ window.onload = function() {
         document.getElementById('apiKeyOverlay').classList.add('hidden'); // Hide overlay
     });
 
-    document.getElementById('takePhoto').addEventListener('click', function() {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(stream => {
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.play();
-
-            setTimeout(() => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                const imageData = canvas.toDataURL('image/jpeg');
-                processImage(imageData.split(',')[1]);
-
-                stream.getTracks().forEach(track => track.stop());
-            }, 3000);
-        })
-        .catch(err => {
-            console.error("Error accessing camera:", err);
-        });
+    takePhotoButton.addEventListener('click', function() {
+        if (!stream) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(mediaStream) {
+                    videoFeed.srcObject = mediaStream;
+                    videoFeed.onloadedmetadata = function(e) {
+                        videoFeed.play();
+                        videoFeed.classList.remove('hidden'); // Show the video feed
+                        takePhotoButton.textContent = 'Take Picture';
+                        stream = mediaStream;
+                    };
+                })
+                .catch(function(err) { console.log(err.name + ": " + err.message); });
+        } else {
+            takePicture();
+            stream.getTracks().forEach(function(track) { track.stop(); });
+            videoFeed.classList.add('hidden'); // Hide the video feed
+            takePhotoButton.textContent = 'Take a Picture';
+            stream = null;
+        }
     });
+
+    function takePicture() {
+        let canvas = document.createElement('canvas');
+        canvas.width = videoFeed.videoWidth;
+        canvas.height = videoFeed.videoHeight;
+        canvas.getContext('2d').drawImage(videoFeed, 0, 0);
+        let dataUrl = canvas.toDataURL('image/png');
+        processImage(dataUrl.split(',')[1]);
+    }
 
     document.getElementById('uploadPhoto').addEventListener('change', function(event) {
         const file = event.target.files[0];
