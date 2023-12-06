@@ -33,6 +33,13 @@
         .hidden {
             display: none !important;
         }
+
+        #cameraUI {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -49,7 +56,10 @@
         </div>
 
         <div id="mainUI" class="text-center">
-            <button id="takePhoto" class="btn btn-secondary">Take a Picture</button>
+            <div id="cameraUI">
+                <video id="videoFeed" class="hidden" autoplay></video>
+                <button id="takePhoto" class="btn btn-secondary">Take a Picture</button>
+            </div>
             <input type="file" id="uploadPhoto" accept="image/*" class="form-control mt-3">
             <div id="spinnerOverlay" class="hidden mt-3">
                 <div class="spinner-border text-primary" role="status">
