@@ -50,7 +50,7 @@ window.onload = function() {
     function processImage(imageBase64) {
         showSpinner(true);
         const gpt4VisionAPI = 'https://api.openai.com/v1/chat/completions';
-        const prompt = "Extract the following wine label information: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, pH, sulphates, alcohol content.";
+        const prompt = "Extract the following wine label information: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, pH, sulphates, alcohol content. Make sure the extracted values make sense and vary from wine label to wine label. Give a reasonable value for the label information if it is not present. Return the values you give in the pattern 'fixed acidity: 0.00, volatile acidity: 0.00, citric acid: 0.00, residual sugar: 0.00, chlorides: 0.00, free sulfur dioxide: 0.00, total sulfur dioxide: 0.00, pH: 0.00, sulphates: 0.00, alcohol: 0.00 but with the values you determined/found.'";
 
         const payload = {
             model: "gpt-4-vision-preview",
@@ -74,8 +74,12 @@ window.onload = function() {
             },
             body: JSON.stringify(payload)
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log(response); // Log the raw API response
+            return response.json();
+        })
         .then(data => {
+            console.log(data.choices[0]); // Log the first choice
             const predictors = extractPredictors(data.choices[0].message.content);
             const density = calculateDensity(predictors);
             const quality = calculateQuality(predictors, density);
@@ -97,11 +101,31 @@ window.onload = function() {
             totalSulfurDioxide: 0, pH: 0, sulphates: 0, alcohol: 0
         };
 
-        // Logic to parse the text and update predictor values
-        // Example: Parse and set predictors.fixedAcidity = <extracted value>
+        // Regex patterns for each predictor.
+        const regexPatterns = {
+            fixedAcidity: /fixed acidity: (\d+(\.\d+)?)/i,
+            volatileAcidity: /volatile acidity: (\d+(\.\d+)?)/i,
+            citricAcid: /citric acid: (\d+(\.\d+)?)/i,
+            residualSugar: /residual sugar: (\d+(\.\d+)?)/i,
+            chlorides: /chlorides: (\d+(\.\d+)?)/i,
+            freeSulfurDioxide: /free sulfur dioxide: (\d+(\.\d+)?)/i,
+            totalSulfurDioxide: /total sulfur dioxide: (\d+(\.\d+)?)/i,
+            pH: /pH: (\d+(\.\d+)?)/i,
+            sulphates: /sulphates: (\d+(\.\d+)?)/i,
+            alcohol: /alcohol: (\d+(\.\d+)?)/i
+        };
+
+        // Extract and update predictor values
+        for (const key in regexPatterns) {
+            const match = text.match(regexPatterns[key]);
+            if (match) {
+                predictors[key] = parseFloat(match[1]);
+            }
+        }
 
         return predictors;
     }
+
 
     function calculateDensity(predictors) {
         const coefficients = {
